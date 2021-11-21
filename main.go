@@ -1,23 +1,34 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"image"
 	_ "image/jpeg"
 	"image/png"
+	"io/ioutil"
 	"os"
 )
 
 func main() {
-	// todo: パスをハードコードしているので、引数で指定できるようにする
+	fmt.Println("===== Process is start =====")
+	// 引数を受け取る
+	flag.Parse()
+	args := flag.Args()
+
+	// todo: ディレクトリ名を指定してファイルのパスのsliceを作る
+	dirName := genDirName(args[0])
+	readFiles(dirName)
+
 	// todo: 変換後の画像の拡張を指定できるようにする
-	imageConv()
+
+	fmt.Println("===== Process is end =====")
 }
 
 // 画像変換処理
-func imageConv() {
+func imageConv(filePath string) {
 	// パスを指定して画像の読み込み
-	f, err := os.Open("./test/practice01.jpg")
+	f, err := os.Open(filePath)
 	if err != nil {
 		fmt.Println("open error:", err)
 		return
@@ -31,6 +42,7 @@ func imageConv() {
 		return
 	}
 
+	// 指定したファイル名で新規作成
 	fso, err := os.Create("practice_test.png")
 	if err != nil {
 		fmt.Println("create error: ", err)
@@ -41,35 +53,20 @@ func imageConv() {
 	png.Encode(fso, img)
 }
 
-//func main() {
-//
-//	// 引数をパースして引数以下のファイルを読み込めるようにする
-//	flag.Parse()
-//	args := flag.Args()
-//	dirName := genDirName(args[0])
-//
-//	readFiles(dirName)
-//}
-//
-//// 引数で入力画像を受け取る
-//func genDirName(s string) string {
-//	dirName := "./" + s
-//	return dirName
-//}
-//
-//// ディレクトリ内のファイルを読み取る処理
-//func readFiles(dir string) {
-//	files, _ := ioutil.ReadDir(dir)
-//
-//	for _, file := range files {
-//		// 元画像の読み込み
-//		f, _ := os.Open("./test/practice01.jpg")
-//
-//
-//		img, _, _ := image.Decode(file)
-//		defer file.Close()
-//
-//		bound := img.Bounds()
-//		fmt.Printf("Go-Logo_LightBlue.jpg\tX : %d px, Y : %d px\n", bound.Dx(), bound.Dy())
-//	}
-//}
+// 引数をディレクトリー名に変換
+func genDirName(s string) string{
+	return "./" + s + "/"
+}
+
+// ディレクトリー内のファイルを読み取る処理
+func readFiles(dirName string) {
+	files, err := ioutil.ReadDir(dirName)
+	if err != nil {
+		fmt.Println("read err: ", err)
+		return
+	}
+	for _, file := range files{
+		filepath := "./test/" + file.Name()
+		imageConv(filepath)
+	}
+}
